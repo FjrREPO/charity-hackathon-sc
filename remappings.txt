@@ -1,0 +1,13 @@
+@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+attestor-core/=lib/attestor-core/
+ds-test/=lib/openzeppelin-contracts-upgradeable/lib/forge-std/lib/ds-test/src/
+eigenlayer-contracts/=lib/attestor-core/avs/contracts/lib/eigenlayer-middleware/lib/eigenlayer-contracts/
+eigenlayer-middleware/=lib/attestor-core/avs/contracts/lib/eigenlayer-middleware/
+erc4626-tests/=lib/openzeppelin-contracts-upgradeable/lib/erc4626-tests/
+forge-std/=lib/forge-std/src/
+openzeppelin-contracts-upgradeable-v4.9.0/=lib/attestor-core/avs/contracts/lib/eigenlayer-middleware/lib/eigenlayer-contracts/lib/openzeppelin-contracts-upgradeable-v4.9.0/
+openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/
+openzeppelin-contracts-v4.9.0/=lib/attestor-core/avs/contracts/lib/eigenlayer-middleware/lib/eigenlayer-contracts/lib/openzeppelin-contracts-v4.9.0/
+openzeppelin-contracts/=lib/openzeppelin-contracts/
+reclaim-solidity-sdk/=lib/reclaim-solidity-sdk/contracts/
