@@ -1,8 +1,0 @@
-overrides:
-  - files: "*.sol"
-    options:
-      printWidth: 90
-      tabWidth: 4
-      useTabs: true
-      singleQuote: false
-      bracketSpacing: false

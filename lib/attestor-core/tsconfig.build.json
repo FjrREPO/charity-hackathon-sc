@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "exclude": [
-    "node_modules",
-    "src/tests",
-    "src/avs/tests"
-  ]
-}
