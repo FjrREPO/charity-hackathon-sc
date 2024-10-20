@@ -21,9 +21,9 @@ contract DonationProof is Ownable {
 
     // reclaim
     address public constant reclaimAddress = 0x8CDc031d5B7F148ab0435028B16c682c469CEfC3;
-    string public constant providersHash = "0x16a7dd86fdd3d499d35ebbcf99bb70097840ffd0aa079d954a0985cd1abb5f67";
+    string public constant providersHash = "0xe65e58b4dc46bef908b71f131bf92daf5afe0ee5e5f6e81dc73473063f1a6551";
 
-    IERC20 public constant usdc = IERC20(0x036CbD53842c5426634e7929541eC2318f3dCF7e);
+    IERC20 public constant usdc = IERC20(0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913);
 
     uint256 public currentTransactionId = 0;
 
@@ -35,10 +35,6 @@ contract DonationProof is Ownable {
 
     mapping(uint256 => bool) public hasClaimed;
 
-    // Events for better tracking
-    event DonationProved(uint256 indexed transactionId, uint256 marketplaceId);
-    event DonationMade(uint256 indexed transactionId, address donor, uint256 productId, uint256 amount);
-
     constructor() Ownable(msg.sender) {
         // add sample
         products[1] = 10;
@@ -46,8 +42,6 @@ contract DonationProof is Ownable {
 
     function donate(uint256 productId) external {
         uint256 price = products[productId];
-        require(price > 0, "Product does not exist");
-        
         usdc.safeTransferFrom(msg.sender, address(this), price);
 
         currentTransactionId += 1;
@@ -60,76 +54,57 @@ contract DonationProof is Ownable {
             proved: false,
             link: ""
         });
-
-        emit DonationMade(currentTransactionId, msg.sender, productId, price);
     }
 
     function proveDonation(uint256 transactionId, uint256 marketplaceId, Reclaim.Proof memory proof) external {
-        // Input validation
-        require(transactionId > 0 && transactionId <= currentTransactionId, "Invalid transaction ID");
-        
         Transaction storage transaction = donations[transactionId];
         require(transaction.account != address(0), "Transaction not found");
-        require(!transaction.proved, "Already proved");
+        require(transaction.proved == false, "Already proved");
         require(!hasClaimed[marketplaceId], "Marketplace Id already used");
-        
-        // Verify the proof and get the marketplace ID
-        uint256 verifiedId = verifyProof(proof);
-        require(verifiedId == marketplaceId, "Marketplace ID mismatch with proof");
+        verifyProof(proof);
 
-        // Update state
         hasClaimed[marketplaceId] = true;
         transaction.marketplaceId = marketplaceId;
         transaction.proved = true;
-
-        emit DonationProved(transactionId, marketplaceId);
     }
 
     function verifyProof(Reclaim.Proof memory proof) public view returns (uint256) {
-        // Verify the proof with Reclaim contract
-        try Reclaim(reclaimAddress).verifyProof(proof) {
-            // Verify provider hash
-            string memory submittedProviderHash = 
-                Claims.extractFieldFromContext(proof.claimInfo.context, '"providerHash":"');
-            
-            require(
-                keccak256(abi.encodePacked(submittedProviderHash)) == keccak256(abi.encodePacked(providersHash)),
-                "Invalid provider hash"
-            );
+        Reclaim(reclaimAddress).verifyProof(proof);
 
-            // Extract and return the ID
-            string memory id = Claims.extractFieldFromContext(proof.claimInfo.context, '"id":"');
-            return stringToUint(id);
-        } catch {
-            revert("Proof verification failed");
-        }
+        // // check if providerHash is valid
+        // string memory submittedProviderHash =
+        //     Claims.extractFieldFromContext(proof.claimInfo.context, '"providerHash":"');
+
+        // // compare two strings
+        // require(
+        //     keccak256(abi.encodePacked(submittedProviderHash)) == keccak256(abi.encodePacked(providersHash)),
+        //     "Invalid ProviderHash"
+        // );
+
+        string memory id = Claims.extractFieldFromContext(proof.claimInfo.context, '"id":"');
+
+        return stringToUint((id));
     }
 
     function setProduct(uint256 id, uint256 price) external onlyOwner {
-        require(id > 0, "Invalid product ID");
-        require(price > 0, "Invalid price");
         products[id] = price;
     }
 
     function removeProduct(uint256 id) external onlyOwner {
-        require(products[id] > 0, "Product does not exist");
         delete products[id];
     }
 
     function withdrawDonation() external onlyOwner {
-        uint256 balance = usdc.balanceOf(address(this));
-        require(balance > 0, "No balance to withdraw");
-        usdc.transfer(owner(), balance);
+        usdc.transfer(owner(), usdc.balanceOf(address(this)));
     }
 
     function stringToUint(string memory s) public pure returns (uint256) {
         bytes memory b = bytes(s);
-        require(b.length > 0, "Empty string");
-        
         uint256 result = 0;
         for (uint256 i = 0; i < b.length; i++) {
-            require(b[i] >= 0x30 && b[i] <= 0x39, "Invalid character found");
-            result = result * 10 + (uint256(uint8(b[i])) - 48);
+            // Check that each character is a valid digit between 0 and 9
+            require(b[i] >= 0x30 && b[i] <= 0x39, "Invalid character found.");
+            result = result * 10 + (uint256(uint8(b[i])) - 48); // ASCII '0' is 48
         }
         return result;
     }
